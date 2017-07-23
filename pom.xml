@@ -11,6 +11,7 @@
     <modules>
         <module>hadoop</module>
         <module>scala</module>
+        <module>spark</module>
     </modules>
 
     <build>
