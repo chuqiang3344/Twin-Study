@@ -1,8 +1,8 @@
 # my
 .idea
 target
+out
 *.iml
-out/
 .classpath
 .project
 .settings/
