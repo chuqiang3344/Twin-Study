@@ -140,6 +140,7 @@ public class SecondarySort {
         }
 
         public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+            System.out.println(123);
             Configuration configuration = new Configuration();
             Job job = Job.getInstance(configuration);
             job.setJarByClass(SecondarySort.class);
@@ -153,8 +154,8 @@ public class SecondarySort {
             job.setOutputValueClass(IntWritable.class);
             job.setInputFormatClass(TextInputFormat.class);
             job.setOutputFormatClass(TextOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path("test1.txt"));
-            FileOutputFormat.setOutputPath(job, new Path("test2.txt"));
+            FileInputFormat.setInputPaths(job, new Path("D:\\IdeaProjects\\~Twin\\Twin-Study\\file\\test1.txt"));
+            FileOutputFormat.setOutputPath(job, new Path("D:\\IdeaProjects\\~Twin\\Twin-Study\\file\\test2.txt"));
             boolean b = job.waitForCompletion(true);
             System.exit(b ? 0 : 1);
         }
