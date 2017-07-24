@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <RollingFile name="RollingFileAppender1" fileName="./logs/mr.log" filepattern="./logs/mr_%d{yyyyMMdd}_%i.log" append="true">
+           <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %class{36} %L %M - %msg%xEx%n"/>
+      <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+	  <Policies>
+        <OnStartupTriggeringPolicy />
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="10 MB"/>
+      </Policies>
+    </RollingFile>
+     <Console name="Console" target="SYSTEM_OUT">    
+      <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>    
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %class{36} %L %M - %msg%xEx%n"/>    
+    </Console> 
+  </Appenders>
+  <Loggers>
+    <Logger name="org.apache.log4j.xml" level="debug">
+      <AppenderRef ref="RollingFileAppender1"/>
+    </Logger>
+    
+    <Logger name="com.gargoylesoftware" level="fatal">
+      <AppenderRef ref="RollingFileAppender1"/>
+    </Logger>
+    <Logger name="com.gargoylesoftware.htmlunit" level="fatal">
+      <AppenderRef ref="RollingFileAppender1"/>
+    </Logger>
+
+    <Root level="debug">
+      <AppenderRef ref="RollingFileAppender1"/>
+       <AppenderRef ref="Console"/> 
+    </Root>
+    
+    
+  </Loggers>
+</Configuration>

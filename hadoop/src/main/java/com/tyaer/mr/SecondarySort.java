@@ -19,9 +19,92 @@ import java.util.StringTokenizer;
 
 public class SecondarySort {
 
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+        System.out.println(1234);
+        Configuration configuration = new Configuration();
+        Job job = Job.getInstance(configuration);
+        job.setJarByClass(SecondarySort.class);
+        job.setMapperClass(Map.class);
+        job.setReducerClass(Reduce.class);
+        job.setPartitionerClass(FirstPartitioner.class);
+        job.setGroupingComparatorClass(GroupingComparator.class);
+        job.setMapOutputKeyClass(IntPair.class);
+        job.setMapOutputValueClass(IntWritable.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+        // 输入hdfs路径
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        // 输出hdfs路径
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        boolean b = job.waitForCompletion(true);
+        System.exit(b ? 0 : 1);
+    }
+
+    public static class FirstPartitioner extends Partitioner<IntPair, IntWritable> {
+
+        public int getPartition(IntPair key, IntWritable intWritable, int partitionNum) {
+            return Math.abs(key.getFirst() * 127) % partitionNum;
+        }
+    }
+
+    public static class Reduce extends Reducer<IntPair, IntWritable, Text, IntWritable> {
+        private static final Text SEPARATOR = new Text("----------------------------------------");
+        private final Text left = new Text();
+
+        @Override
+        protected void reduce(IntPair key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+            context.write(SEPARATOR, null);
+            left.set(String.valueOf(key.getFirst()));
+            for (IntWritable value : values) {
+                context.write(left, value);
+            }
+        }
+    }
+
+    public static class Map extends Mapper<LongWritable, Text, IntPair, IntWritable> {
+        private final IntPair intPair = new IntPair();
+        private final IntWritable intWritable = new IntWritable();
+
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String line = value.toString();
+            StringTokenizer stringTokenizer = new StringTokenizer(line);
+            int left = 0;
+            int right = 0;
+            if (stringTokenizer.hasMoreTokens()) {
+                left = Integer.parseInt(stringTokenizer.nextToken());
+                if (stringTokenizer.hasMoreTokens()) {
+                    right = Integer.parseInt(stringTokenizer.nextToken());
+                }
+                intPair.setFirst(left);
+                intPair.setSecond(right);
+                intWritable.set(right);
+                context.write(intPair, intWritable);
+            }
+        }
+    }
+
+    public static class GroupingComparator extends WritableComparator {
+
+        protected GroupingComparator() {
+            super(IntPair.class, true);
+        }
+
+        @Override
+        public int compare(WritableComparable a, WritableComparable b) {
+            IntPair a1 = (IntPair) a;
+            IntPair b1 = (IntPair) b;
+            int first1 = a1.getFirst();
+            int first2 = b1.getFirst();
+            return first1 == first2 ? 0 : (first1 < first2 ? -1 : 1);
+        }
+    }
+
     public static class IntPair implements WritableComparable<IntPair> {
         int first;
         int second;
+
 
         public int getFirst() {
             return first;
@@ -80,84 +163,6 @@ public class SecondarySort {
             }
         }
 
-        public static class FirstPartitioner extends Partitioner<IntPair, IntWritable> {
 
-            public int getPartition(IntPair key, IntWritable intWritable, int partitionNum) {
-                return Math.abs(key.getFirst() * 127) % partitionNum;
-            }
-        }
-
-        public static class GroupingComparator extends WritableComparator {
-
-            protected GroupingComparator() {
-                super(IntPair.class, true);
-            }
-
-            @Override
-            public int compare(WritableComparable a, WritableComparable b) {
-                IntPair a1 = (IntPair) a;
-                IntPair b1 = (IntPair) b;
-                int first1 = a1.getFirst();
-                int first2 = b1.getFirst();
-                return first1 == first2 ? 0 : (first1 < first2 ? -1 : 1);
-            }
-        }
-
-        public static class Map extends Mapper<LongWritable, Text, IntPair, IntWritable> {
-            private final IntPair intPair = new IntPair();
-            private final IntWritable intWritable = new IntWritable();
-
-            public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-                String line = value.toString();
-                StringTokenizer stringTokenizer = new StringTokenizer(line);
-                int left = 0;
-                int right = 0;
-                if (stringTokenizer.hasMoreTokens()) {
-                    left = Integer.parseInt(stringTokenizer.nextToken());
-                    if (stringTokenizer.hasMoreTokens()) {
-                        right = Integer.parseInt(stringTokenizer.nextToken());
-                    }
-                    intPair.setFirst(left);
-                    intPair.setSecond(right);
-                    intWritable.set(right);
-                    context.write(intPair, intWritable);
-                }
-            }
-        }
-
-        public static class Reduce extends Reducer<IntPair, IntWritable, Text, IntWritable> {
-            private final Text left = new Text();
-            private static final Text SEPARATOR = new Text("----------------------------------------");
-
-            @Override
-            protected void reduce(IntPair key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-                context.write(SEPARATOR, null);
-                left.set(String.valueOf(key.getFirst()));
-                for (IntWritable value : values) {
-                    context.write(left, value);
-                }
-            }
-        }
-
-        public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-            System.out.println(123);
-            Configuration configuration = new Configuration();
-            Job job = Job.getInstance(configuration);
-            job.setJarByClass(SecondarySort.class);
-            job.setMapperClass(Map.class);
-            job.setReducerClass(Reduce.class);
-            job.setPartitionerClass(FirstPartitioner.class);
-            job.setGroupingComparatorClass(GroupingComparator.class);
-            job.setMapOutputKeyClass(IntPair.class);
-            job.setMapOutputValueClass(IntWritable.class);
-            job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(IntWritable.class);
-            job.setInputFormatClass(TextInputFormat.class);
-            job.setOutputFormatClass(TextOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path("D:\\IdeaProjects\\~Twin\\Twin-Study\\file\\test1.txt"));
-            FileOutputFormat.setOutputPath(job, new Path("D:\\IdeaProjects\\~Twin\\Twin-Study\\file\\test2.txt"));
-            boolean b = job.waitForCompletion(true);
-            System.exit(b ? 0 : 1);
-        }
     }
 }
