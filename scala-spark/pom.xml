@@ -18,7 +18,7 @@
         <jdk.version>1.8</jdk.version>
         <scala.version>2.10.5</scala.version>
         <scala.dep.version>2.10</scala.dep.version>
-        <spark.version>1.6.0</spark.version>
+        <spark.version>2.2.0</spark.version>
         <spark-csv.version>1.5.0</spark-csv.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hbase.version>1.1.2</hbase.version>
@@ -49,10 +49,23 @@
             <artifactId>spark-sql_2.10</artifactId>
             <version>${spark.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-streaming_2.10 -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-streaming_2.10</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-server</artifactId>
             <version>${hbase.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>21.0</version>
         </dependency>
     </dependencies>
 

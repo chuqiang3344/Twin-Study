@@ -16,6 +16,8 @@ import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
 import org.apache.hadoop.hbase.util.Base64;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function2;
@@ -80,6 +82,14 @@ public class HbaseTest implements Serializable {
         JavaSparkContext sc = new JavaSparkContext("spark://nowledgedata-n3:7077", "hbaseTest",
                 "/home/hadoop/software/spark-0.8.1",
                 new String[]{"target/ndspark.jar", "target\\dependency\\hbase-0.94.6.jar"});
+
+//        SparkConf sparkConf = new SparkConf().setAppName("TableCount");
+//        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+//            sparkConf.setMaster("local[*]");
+//        } else {
+//            sparkConf.setMaster("yarn-client");
+//        }
+//        SparkContext sc = new SparkContext(sparkConf);
 
         //使用HBaseConfiguration.create()生成Configuration
         // 必须在项目classpath下放上hadoop以及hbase的配置文件。
