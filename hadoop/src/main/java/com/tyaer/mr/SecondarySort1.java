@@ -180,6 +180,11 @@ public class SecondarySort1 {
     }
 
     // 自定义map
+
+    /**
+     * LongWritable, Text 输入
+     *  IntPair, IntWritable 输出
+     */
     public static class Map extends Mapper<LongWritable, Text, IntPair, IntWritable> {
         private  IntPair intkey = new IntPair();
         private  IntWritable intvalue = new IntWritable();
