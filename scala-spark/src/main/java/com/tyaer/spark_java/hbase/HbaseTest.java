@@ -32,7 +32,7 @@ import java.util.List;
  * <pre>
  *
  * spark hbase 测试
- *
+ * http://www.aboutyun.com/thread-8242-1-1.html
  *  Created with IntelliJ IDEA.
  * User: zhangdonghao
  * Date: 14-1-26

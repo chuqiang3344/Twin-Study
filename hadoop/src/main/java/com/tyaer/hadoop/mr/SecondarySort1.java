@@ -1,6 +1,7 @@
-package com.tyaer.kafka.mr;
+package com.tyaer.hadoop.mr;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
@@ -59,6 +60,8 @@ public class SecondarySort1 {
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
         // 提交job
         System.exit(job.waitForCompletion(true) ? 0 : 1);
+
+//        FileSystem.
     }
 
     //自己定义的key类应该实现WritableComparable接口

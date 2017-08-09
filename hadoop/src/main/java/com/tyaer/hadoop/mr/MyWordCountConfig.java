@@ -1,4 +1,4 @@
-package com.tyaer.kafka.mr;
+package com.tyaer.hadoop.mr;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
