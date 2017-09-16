@@ -12,6 +12,8 @@
         <module>hadoop</module>
         <module>scala-spark</module>
         <module>kafka</module>
+        <module>storm-demo</module>
+        <module>spark-demo</module>
     </modules>
 
     <build>
