@@ -1,53 +1,59 @@
 package com.tyaer.spark.streaming.kafka
 
-import java.util
-import java.util.{HashMap, Map}
-
-import org.apache.spark.SparkConf
+import kafka.serializer.StringDecoder
 import org.apache.spark.streaming.kafka.KafkaUtils
-import org.apache.spark.streaming.{Minutes, Seconds, StreamingContext}
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by Twin on 2017/9/16.
   */
 object KafkaWordCount2 {
 
-    def brokerList: _root_.scala.Predef.String = "test11:9092,test12:9092,test13:9092";
 
-    def main(args: Array[String]): Unit = {
-    if (args.length < 4) {
-      System.err.println("Usage: KafkaWordCount <zkQuorum> <group> <topics> <numThreads>");
+  def main(args: Array[String]): Unit = {
 
-      //        System.exit(1)
-    }
+    val Array(brokerList, group, topics, numThreads) = Array("test11:9092,test12:9092,test13:9092", "zcq_test", "topic_test", "1");
 
-    //      StreamingExamples.setStreamingLogLevels()
+    val conf = new SparkConf()
+    conf.setAppName("spark_streaming")
+    conf.setMaster("local[*]")
 
-//    val Array(zkQuorum, group, topics, numThreads) = args
-//    val Array(zkQuorum, group, topics, numThreads) = Array ("test11:9092,test12:9092,test13:9092","zcq_test" , "topic_test", "1");
-    val Array(zkQuorum, group, topics, numThreads) = Array ("test11,test12,test13","zcq_test" , "topic_test", "1");
-    val sparkConf = new SparkConf().setAppName("KafkaWordCount").setMaster("local[*]")
-    val ssc = new StreamingContext(sparkConf, Seconds(2))
-    ssc.checkpoint("checkpoint")
+    val sc = new SparkContext(conf)
+    sc.setCheckpointDir(checkpointDirectory)
+    sc.setLogLevel("ERROR")
 
-    val topicMap = topics.split(",").map((_, numThreads.toInt)).toMap
-    println(topicMap)
+    val ssc = new StreamingContext(sc, Seconds(batchDuration))
 
-      val kafkaParams: util.Map[String, String] = new util.HashMap[String, String]
-      kafkaParams.put("metadata.broker.list", brokerList)
-      kafkaParams.put("group.id", group)
-      kafkaParams.put("session.timeout.ms", "30000")
-      kafkaParams.put("request.timeout.ms", "60000")
+    // val topics = Map("spark" -> 2)
 
-//    val lines = KafkaUtils.createDirectStream(ssc,kafkaParams,topics);
-//    val words = lines.flatMap(
-//        _.split(" "))
-//    val wordCounts = words.map(x => (x, 1L))
-//      .reduceByKeyAndWindow(_ + _, _ - _, Minutes(10), Seconds(2), 2)
-//    wordCounts.print();
+    val kafkaParams = Map[String, String](
+      "bootstrap.servers" -> brokerList,
+      "group.id" -> group,
+      //    "auto.offset.reset" -> "smallest"
+      "auto.offset.reset" -> "largest"
+    )
+    // 直连方式拉取数据，这种方式不会修改数据的偏移量，需要手动的更新
+    val lines = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ssc, kafkaParams, Set(topics)).map(_._2)
+    //   val lines = KafkaUtils.createStream(ssc, "m1:2181,m2:2181,m3:2181", "spark", topics).map(_._2)
+
+    val ds1 = lines.flatMap(_.replace("\n", "").split(" ")).filter(!_.isEmpty).map((_, 1))
+
+    val ds2 = ds1.updateStateByKey[Int]((x: Seq[Int], y: Option[Int]) => {
+      Some(x.sum + y.getOrElse(0))
+    })
+
+    ds2.count().print()
+    ds2.print()
 
     ssc.start()
     ssc.awaitTermination()
+
+
   }
+
+  val batchDuration = 2;
+
+  val checkpointDirectory = "D:/checkpoints"
 
 }

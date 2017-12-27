@@ -11,6 +11,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.streaming.Duration;
@@ -23,6 +24,7 @@ import org.apache.spark.streaming.kafka.OffsetRange;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -125,24 +127,23 @@ public class Demo1 {
 
         System.out.println("=========================lines count:" + stream.count());
 
-        stream.foreachRDD(new Function<JavaRDD<Row>, Void>() {
+        stream.foreachRDD(new VoidFunction<JavaRDD<Row>>() {
             @Override
-            public Void call(JavaRDD<Row> rowJavaRDD) throws Exception {
+            public void call(JavaRDD<Row> rowJavaRDD) throws Exception {
                 OffsetRange[] offsets = ((HasOffsetRanges) rowJavaRDD.rdd()).offsetRanges();
                 JavaRDD<Row> filter = rowJavaRDD.filter(new Function<Row, Boolean>() {
                     @Override
                     public Boolean call(Row row) throws Exception {
-                        return row == null && row.get(0) != null;
+                        return row != null && row.get(0) != null;
                     }
                 });
                 filter.flatMap(new FlatMapFunction<Row, Object>() {
                     @Override
-                    public Iterable<Object> call(Row row) throws Exception {
-                        System.out.println(row.getString(0));
+                    public Iterator<Object> call(Row row) throws Exception {
                         return null;
                     }
                 });
-                return null;
+//                return null;
             }
         });
 

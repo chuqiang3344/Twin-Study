@@ -127,7 +127,6 @@ public class ZKUtils {
 		long t3 = Calendar.getInstance().getTimeInMillis();
 		System.out.println(t2-t1);
 		System.out.println(t3-t2);
-		System.out.println(ZKUtils.getDataFromZK("/test"));
 	}
 
 }
