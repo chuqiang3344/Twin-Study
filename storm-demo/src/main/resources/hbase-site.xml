@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+/**
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<configuration>
+  <!--hbase存储在HADOOP HDFS上文件根目录路径-->  
+    <property>  
+            <name>hbase.rootdir</name>  
+                    <value>hdfs://test231:9000/hbase</value>  
+                        </property>  
+                                <!--采用分布式模式-->  
+    <property>  
+            <name>hbase.cluster.distributed</name>  
+                    <value>true</value>  
+                        </property>  
+                                <!--zookeeper地址，端口不指定的话就默认为2181-->  
+    <property>  
+            <name>hbase.zookeeper.quorum</name>  
+                    <value>test231,test233,test231</value>  
+                        </property>  
+                                <!--hbase临时文件存储目录，比如一些数据表的预分区信息等等-->  
+    <property>  
+            <name>hbase.tmp.dir</name>  
+                    <value>/home/hadoop/hbase/</value>  
+                        </property>  
+                            <property>  
+                                    <name>hbase.master</name>  
+                                            <value>hdfs://test231:60000</value>  
+                                                </property>  
+   <property>
+           <name>hbase.master.maxclockskew</name>
+                   <value>180000</value>
+                           <description>Time difference of regionserver from master</description>
+                            </property>
+                                                        <!--zookeeper存储数据位置-->  
+    <property>  
+            <name>hbase.zookeeper.property.dataDir</name>  
+                    <value>/home/hadoop/zookeeper</value>  
+                        </property>  
+                                <!--这里设置hbase API客户端侧缓存值，大于此值就进行一次提交，/opt/hbase-1.2.1/conf/hbase-site.xml统一配置为5M，对所有HTable都生效，那么客户端API就可不设置--> 
+    <property>  
+            <!--htable.setWriteBufferSize(5242880);//5M -->  
+        <name>hbase.client.write.buffer</name>  
+                <value>5242880</value>  
+                    </property>  
+                            <!--这里设置Master并发最大线程数-->  
+    <property>  
+            <name>hbase.regionserver.handler.count</name>  
+                    <value>300</value>  
+                            <description>Count of RPC Listener instances spun up on  
+                                        RegionServers.Same property is used by the Master for count of master  
+                                                    handlers.</description>  
+                                                        </property>  
+							<!--  
+							      hbase.table.sanity.checks是一个开关，主要用于hbase各种参数检查，当为true时候，检查步骤如下  
+								
+1.check max file size，hbase.hregion.max.filesize，最小为2MB  
+2.check flush size，hbase.hregion.memstore.flush.size，最小为1MB  
+3.check that coprocessors and other specified plugin classes can be loaded  
+4.check compression can be loaded  
+5.check encryption can be loaded  
+6.Verify compaction policy  
+7.check that we have at least 1 CF  
+8.check blockSize  
+9.check versions  
+10.check minVersions <= maxVerions  
+11.check replication scope  
+12.check data replication factor, it can be 0(default value) when user has not explicitly set the value, in this case we use default replication factor set in the file system.  
+
+详细情况可以去查看源代码org.apache.hadoop.hbase.master.HMaster的方法sanityCheckTableDescriptor，  
+该代码位于hbase源码的模块hbase-server下  
+-->  
+<property>  
+    <name>hbase.table.sanity.checks</name>  
+	    <value>false</value>  
+		</property>  
+			<!--ZooKeeper 会话超时.HBase把这个值传递改zk集群，向他推荐一个会话的最大超时时间-->  
+<property>  
+    <!--every 30s,the master will check regionser is working -->  
+<name>zookeeper.session.timeout</name>  
+	<value>30000</value>  
+	    </property>  
+		    <!--数据表创建时会预分区，每个预分区最大大小这里设置为30G，防止频繁的split阻塞数据读写，只有当预分区超过30G时才会进行split，正式环境应该首先预测数据存储时间内的大致数据量，然后如果每个预分区为30G，计算出分区数，建表时指定分区设置，防止后期频繁split-->  
+<property>  
+    <!--every region max file size set to 30G -->  
+<name>hbase.hregion.max.filesize</name>  
+	<value>32212254720</value>  
+	    </property>  
+		    <!--默认hbase每24小时会进行一次major_compact，major_compact会阻塞读写，这里先禁用，但不代表这个操作不做，可以后期指定linux shell加入到cron定时任务在hbase集群空闲情况下执行-->  
+<property>  
+    <name>hbase.hregion.majorcompaction</name>  
+	    <value>0</value>  
+		</property>  
+			<!--hbase本质上可以说是HADOOP HDFS的客户端，虽然Hadoop的core-site.xml里设置了文件副本数，但是仍然是客户端传值优先，这里设置为2，意思是一个文件，最终在Hadoop上总个数为2，正式环境最好设置为3，目前发现此值小于3时，在遇到All datanodes xxx.xxx.xxx.xxx:port are bad. Aborting...错误信息时，如果某个DataNode宕机，原则上hbase调用的DFSClient会去其他Datanode  
+			     上重试写，但发现配置的值低于3就不会去尝试-->  
+<property>  
+    <name>dfs.replication</name>  
+	    <value>3</value>  
+		</property>  
+			<!--  
+					  IncreasingToUpperBoundRegionSplitPolicy策略的意思是，数据表如果预分区为2，配置的memstore flush size=128M，那么下一次分裂大小是2的平方然后乘以128MB，即2*2*128M=512MB;  
+						      ConstantSizeRegionSplitPolicy策略的意思是按照上面指定的region大小超过30G才做分裂  
+						      -->  
+<property>  
+    <name>hbase.regionserver.region.split.policy</name>  
+	    <value>org.apache.hadoop.hbase.regionserver.ConstantSizeRegionSplitPolicy</value>  
+		</property>  
+			<!--一个edit版本在内存中的cache时长，默认3600000毫秒-->  
+<property>  
+    <name>hbase.regionserver.optionalcacheflushinterval</name>  
+	    <value>7200000</value>  
+		    <description>  
+				Maximum amount of time an edit lives in memory before being automatically  
+					    flushed.  
+							Default 1 hour. Set it to 0 to disable automatic flushing.</description>  
+							    </property>  
+								    <!--分配给HFile/StoreFile的block cache占最大堆(-Xmx setting)的比例。默认0.4意思是分配40%，设置为0就是禁用，但不推荐。-->  
+<property>  
+    <name>hfile.block.cache.size</name>  
+	    <value>0.3</value>  
+		    <description>Percentage of maximum heap (-Xmx setting) to allocate to  
+				block cache  
+					    used by HFile/StoreFile. Default of 0.4 means allocate 40%.  
+							Set to 0 to disable but it's not recommended; you need at least  
+								    enough cache to hold the storefile indices.</description>  
+									</property>  
+										<!--当memstore的大小超过这个值的时候，会flush到磁盘。这个值被一个线程每隔hbase.server.thread.wakefrequency检查一下。-->  
+<property>  
+    <name>hbase.hregion.memstore.flush.size</name>  
+	    <value>52428800</value>  
+		</property>  
+			<!--单个region server的全部memtores的最大值。超过这个值，一个新的update操作会被挂起，强制执行flush操作。以前版本中是通过hbase.regionserver.global.memstore.upperLimit设置，老版本中含义是在hbase-env.sh中配置的HEAP_SIZE比如4G，那么以该值4G乘以配置的0.5就是2G，意思是所有memstore总和达到2G值时，阻塞所有读写，现在1.2.1版本hbase中被hbase.regionserver.global.memstore.size替代，计算方法仍然是HEAP_SIZE乘以配置的百分比比如下面的0.5，那么阻塞读写的阀值就为2G-->  
+<property>  
+    <name>hbase.regionserver.global.memstore.size</name>  
+	    <value>0.5</value>  
+		</property>  
+			<!--当强制执行flush操作的时候，当低于这个值的时候，flush会停止。默认是堆大小的 35% . 如果这个值和 hbase.regionserver.global.memstore.upperLimit 相同就意味着当update操作因为内存限制被挂起时，会尽量少的执行flush(译者注:一旦执行flush，值就会比下限要低，不再执行)。  
+			     在老版本中该值是通过hbase.regionserver.global.memstore.size.lower.limit设置，计算方法是HEAP_SIZE乘以配置的百分比比如0.3就是HEAP_SIZE4G乘以0.3=1.2G，达到这个值的话就在所有memstore中选择最大的那个做flush动作，新版本则完全不同了，首先是通过hbase.regionserver.global.memstore.lowerLimit设置，而且不是以HEAP_SIZE作为参考，二是以配置的hbase.regionserver.global.memstore.size的值再乘以配置的比例比如0.5，如果HEAP_SIZE=4G，hbase.regionserver.global.memstore.size配置为0.5，hbase.regionserver.global.memstore.size.lower.limit配置的为0.5，则计算出来的值为4G乘以0.5再乘以0.5就是1G了，达到1G就先找最大的memstore触发flush-->  
+<property>  
+    <name>hbase.regionserver.global.memstore.size.lower.limit</name>  
+	    <value>0.5</value>  
+		</property>  
+		<property>  
+		  <!--这里设置HDFS客户端最大超时时间，尽量改大，后期hbase经常会因为该问题频繁宕机-->  
+<name>dfs.client.socket-timeout</name>  
+<value>600000</value>  
+    </property>  
+</configuration>

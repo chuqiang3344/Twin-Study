@@ -15,6 +15,10 @@ object Demo {
     // Create a DStream that will connect to serverIP:serverPort, like localhost:9999
     val lines = ssc.socketTextStream("localhost", 9999)
 
+    val window = lines.reduceByWindow(_+_,Seconds(30),Seconds(10))
+    window.window(Seconds(2))
+    window.countByWindow(Seconds(30),Seconds(10))
+
     // Split each line into words
     val words = lines.flatMap(_.split(" "))
 
