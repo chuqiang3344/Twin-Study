@@ -47,7 +47,7 @@ public class MyKafkaTopology {
 
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafka-reader", new KafkaSpout(spoutConf), 2); // Kafka我们创建了一个5分区的Topic，这里并行度设置为5
-        builder.setBolt("word-splitter", new KafkaWordSplitter(), 7).shuffleGrouping("kafka-reader");
+        builder.setBolt("word-splitter", new KafkaWordSplitter(), 7).setNumTasks(7).shuffleGrouping("kafka-reader");
         builder.setBolt("word-counter", new WordCounter(),5).fieldsGrouping("word-splitter", new Fields("word"));
 
         Config conf = new Config();

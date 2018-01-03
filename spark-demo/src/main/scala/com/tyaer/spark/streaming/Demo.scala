@@ -2,11 +2,15 @@ package com.tyaer.spark.streaming
 
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.junit.Test
 
 /**
   * Created by Twin on 2017/7/26.
   */
 object Demo {
+
+
+
   def main(args: Array[String]): Unit = {
     // Create a StreamingContext with a local master
     val sparkConf = new SparkConf().setAppName("DelOldrecords")
@@ -26,5 +30,26 @@ object Demo {
     wordCounts.print()
     ssc.start() // Start the computation
     ssc.awaitTermination() // Wait for the computation to terminate
+
+
+//    val sparkConf = new SparkConf().setAppName("DelOldrecords").setMaster("local[2]")
+//    val ssc = new StreamingContext(sparkConf, Seconds(1))
+//    val unit = ssc.fileStream("file/word")
+//    val words = unit.flatMap(_.split(" "))
+//
+//    ssc.start() // Start the computation
+//    ssc.awaitTermination() // Wait for the computation to terminate
+
+
+  }
+
+  @Test
+  def file: Unit ={
+    val sparkConf = new SparkConf().setAppName("DelOldrecords")
+    val ssc = new StreamingContext(sparkConf, Seconds(1))
+    val unit = ssc.fileStream("file/word")
+//    ssc.queueStream()
+
+    println(unit)
   }
 }

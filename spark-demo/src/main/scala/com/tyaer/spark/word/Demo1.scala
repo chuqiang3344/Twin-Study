@@ -1,11 +1,14 @@
 package com.tyaer.spark.word
 
+import com.tyaer.spark.rdd.StringGenerateRDD
 import org.apache.spark.{SparkConf, SparkContext}
+import org.junit.Test
 
 /**
   * Created by Twin on 2017/12/27.
   */
 object Demo1 {
+
   def main(args: Array[String]): Unit = {
     val sparkConf = new SparkConf().setMaster("local[2]").setAppName(this.getClass.getSimpleName)
     val sc = new SparkContext(sparkConf)
@@ -17,6 +20,14 @@ object Demo1 {
     })
     println(rdd1)
 
-    sc.textFile("file/word/input.txt");
+    sc.textFile("file/word/input.txt").flatMap(_.split(" ")).collect().foreach(println);
+  }
+
+  @Test
+  def t1(): Unit ={
+    val sparkConf = new SparkConf().setAppName("t1").setMaster("local[2]")
+    val sc = new SparkContext(sparkConf)
+    val rdd = new StringGenerateRDD(sc,"sun biao biao\n sun biao biao\nsun biao biao\n sun biao biao\nsun biao biao\n sun biao biao\nsun biao biao\n sun biao biao\nsun biao biao\n sun biao biao\n", 3)
+    rdd.flatMap(_.split("_")).map((_,1)).reduceByKey(_+_).collect().foreach(println)
   }
 }

@@ -6,14 +6,20 @@ out
 .classpath
 .project
 .settings/
-bin/
 .myeclipse
+
+
+bin/
+checkpoint
+logs
+log
 
 # Compiled class file
 *.class
 
 # Log file
 *.log
+*.logs
 
 # BlueJ files
 *.ctxt

@@ -1,4 +1,4 @@
-package com.tyaer.spark.word
+package com.tyaer.spark.sql
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -6,7 +6,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
   * Created by Twin on 2017/6/7.
   */
-object GF_test {
+object MysqlDemo {
 
   val NUM_SAMPLES: Int = 1000
 
